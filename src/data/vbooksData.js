@@ -1,0 +1,75 @@
+export const BOOKS_DATA = [
+  // Həftənin ən çox baxılanları
+  {
+    id: 1,
+    title: 'Sevmək sənəti',
+    author: 'Erich Fromm',
+    price: 5.10,
+    oldPrice: 6.00,
+    isMostViewed: true,
+    categoryId: 'psychology',
+    image: 'https://www.qanun.az/images/news/compressed/2024-07-12-15-44-431720784683.jpg',
+  },
+  {
+    id: 2,
+    title: 'Masumiyet Müzesi',
+    author: 'Orhan Pamuk',
+    price: 27.11,
+    oldPrice: 31.90,
+    isMostViewed: true,
+    categoryId: 'novels',
+    image: 'https://upload.wikimedia.org/wikipedia/tr/thumb/a/a9/Masumiyet_M%C3%BCzesi_kapak.jpg/500px-Masumiyet_M%C3%BCzesi_kapak.jpg?utm_source=tr.wikipedia.org&utm_campaign=parser&utm_content=thumbnail',
+  },
+  {
+    id: 3,
+    title: 'Сила вашего подсознания. Как получить все, о чем вы просите',
+    author: 'Джозеф Мэрфи',
+    price: 13.51,
+    oldPrice: 15.90,
+    isMostViewed: true,
+    categoryId: 'psychology',
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRajQCjt8SOpPzbAhSAlMvM7cgy9SS7fOOxInOk2BcEuAGwpHo9Xod34ao&s=10',
+  },
+  {
+    id: 4,
+    title: 'Спартак',
+    author: 'Рафаэлло Джованьоли',
+    price: 7.56,
+    oldPrice: 8.90,
+    isMostViewed: true,
+    categoryId: 'classics',
+    image: 'https://bakubookcenter.az/en/get-product-image?fileId=105918',
+  },
+  {
+    id: 5,
+    title: 'Аюрведа. Чакры. Энергетические Центры Человека',
+    author: 'Амритананда Чопра',
+    price: 22.01,
+    oldPrice: 25.90,
+    isMostViewed: true,
+    categoryId: 'psychology',
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSWZibzknSXGYouM6vdzbW0ILz11gbhj428xMQ7HBC32w&s',
+  },
+  {
+    id: 6,
+    title: 'Рубаи',
+    author: 'Омар Хайям',
+    price: 8.41,
+    oldPrice: 9.90,
+    isMostViewed: true,
+    categoryId: 'classics',
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRnMTbXbP51Cxi3nrRfYmmPNyYjqy9uOfDlUBIGWTehYcXbrOcxJpIBKl84&s=10',
+  },
+
+  // Kateqoriya kitabları
+  { id: 7, title: 'Atomik Vərdişlər', categoryId: 'personal_dev', price: 15.50, image: 'https://www.qanun.az/images/news/compressed/2024-10-18-10-40-161729233616.jpg' },
+  { id: 8, title: 'Dostları Necə Qazanmalı', categoryId: 'personal_dev', price: 12.00, image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7Ja4f_yJjXjZmz3ApTDYzV9GgK28svenNnfWassOAgxMwiiOxvRPV3o8Z&s=10' },
+  { id: 9, title: 'Zəngin Ata, Kasıb Ata', categoryId: 'personal_dev', price: 14.80, image: 'https://www.qanun.az/images/news/compressed/2025-12-29-12-35-381766997338.jpg' },
+  { id: 10, title: 'Dahilər və Autsayderlər', categoryId: 'personal_dev', price: 13.50, image: 'https://cdn.insales-shop.ru/r/3-oLmEm7P1E/rs:fit:1140:1140:1/q:80/plain/images/products/1/6231/257521751/Malkolm_Dahiler_ve_autsayderler_Esas.png@webp' },
+  { id: 11, title: '1984', categoryId: 'fiction', price: 14.00, image: 'https://cdn.insales-shop.ru/r/2UWQMgz_CPs/rs:fit:570:570:1/q:80/plain/images/products/1/8/211730440/9780141036144.jpg@jpg' },
+  { id: 12, title: 'Harri Potter və Fəlsəfə Daşı', categoryId: 'sci_fi', price: 16.50, image: 'https://www.qanun.az/images/news/compressed/2024-11-25-11-39-041732520344.jpg' },
+  { id: 13, title: 'Balaca Şahzadə', categoryId: 'discounts', price: 6.50, image: 'https://www.3alma.az/storage/799/conversions/balaca-sahzade-front-book.jpg' },
+];
+
+// Lazım olduqda yalnız "Həftənin ən çox baxılanları"nı süzmək üçün funksiya:
+export const getMostViewedBooks = () => BOOKS_DATA.filter((book) => book.isMostViewed);

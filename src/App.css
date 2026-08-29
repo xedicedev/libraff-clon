@@ -1,0 +1,13 @@
+/* Bütün saytda scrollbar xəttini gizlədir, amma səhifə sürüşməyə (scroll olmağa) davam edir */
+html, body {
+  -ms-overflow-style: none;  /* IE və Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;             /* Chrome, Safari, Opera */
+}
+body {
+  overflow: hidden;
+}
