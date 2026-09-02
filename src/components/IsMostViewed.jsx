@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { BOOKS_DATA } from '../data/vbooksData';
 import { useWishlist } from '../context/WishlistContext';
 
@@ -6,6 +6,9 @@ export default function MostViewedSection({ onNavigate }) {
   const INITIAL_COUNT = 6;
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
   
+  // "Bağla" düyməsinə basıldıqda bölmənin başına rahat qayıtmaq üçün ref
+  const sectionRef = useRef(null);
+
   const { wishlist, toggleWishlist } = useWishlist();
   const [modalBook, setModalBook] = useState(null);
 
@@ -15,12 +18,22 @@ export default function MostViewedSection({ onNavigate }) {
 
   const displayedBooks = currentBooks.slice(0, visibleCount);
 
+  // Növbəti 6 kitabı açır
   const handleShowMore = () => {
     setVisibleCount((prev) => prev + INITIAL_COUNT);
   };
 
+  // Bir addım geri qaytarır (məsələn: 18 -> 12, 12 -> 6)
   const handleShowLess = () => {
+    setVisibleCount((prev) => Math.max(INITIAL_COUNT, prev - INITIAL_COUNT));
+  };
+
+  // Tamamilə bağlayıb ilkin 6 vəziyyətinə qaytarır və yuxarı scroll edir
+  const handleCloseAll = () => {
     setVisibleCount(INITIAL_COUNT);
+    if (sectionRef.current) {
+      sectionRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   const handleFavoriteClick = (book) => {
@@ -32,8 +45,11 @@ export default function MostViewedSection({ onNavigate }) {
     }
   };
 
+  const isAllShown = visibleCount >= currentBooks.length;
+
   return (
     <section
+      ref={sectionRef}
       style={{
         maxWidth: '1300px',
         margin: '0 auto',
@@ -154,9 +170,10 @@ export default function MostViewedSection({ onNavigate }) {
         })}
       </div>
 
-      {/* DÜYMƏLƏR (Daha çox / Daha az) */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
-        {visibleCount < currentBooks.length && (
+      {/* DÜYMƏLƏR (Daha çox / Daha az / Bağla) */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
+        {/* Hələ də göstərilməyən kitablar varsa "Daha çox göstər" görünür */}
+        {!isAllShown && (
           <button
             onClick={handleShowMore}
             style={{
@@ -175,6 +192,7 @@ export default function MostViewedSection({ onNavigate }) {
           </button>
         )}
         
+        {/* İlkin saydan (6-dan) çox kitab açılıbsa "Daha az göstər" düyməsi görünür */}
         {visibleCount > INITIAL_COUNT && (
           <button
             onClick={handleShowLess}
@@ -191,6 +209,26 @@ export default function MostViewedSection({ onNavigate }) {
             }}
           >
             Daha az göstər
+          </button>
+        )}
+
+        {/* Bütün kitablar tam açıldıqdan sonra "Bağla" düyməsi görünür */}
+        {isAllShown && currentBooks.length > INITIAL_COUNT && (
+          <button
+            onClick={handleCloseAll}
+            style={{
+              padding: '10px 28px',
+              borderRadius: '24px',
+              border: '1px solid #1f2937',
+              backgroundColor: '#1f2937',
+              color: '#fff',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
+          >
+            Bağla
           </button>
         )}
       </div>

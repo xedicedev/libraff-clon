@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { BOOKS_DATA } from '../data/booksData';
-import { useWishlist } from '../context/WishlistContext'; // 1. Context import edildi
+import { useWishlist } from '../context/WishlistContext';
 
 export default function TodaysPicks({ onNavigate }) {
   const [activeTab, setActiveTab] = useState('az');
   const [visibleCount, setVisibleCount] = useState(6);
   
-  // 2. Local favorites state əvəzinə global WishlistContext istifadə olunur
+  // Siyahı bağlandıqda səhifənin yuxarıya səliqəli qaytarması üçün ref
+  const sectionRef = useRef(null);
+
   const { wishlist, toggleWishlist } = useWishlist();
-  
-  // Modalda göstəriləcək kitab
   const [modalBook, setModalBook] = useState(null);
 
   const currentBooks = BOOKS_DATA[activeTab] || [];
@@ -24,14 +24,18 @@ export default function TodaysPicks({ onNavigate }) {
     setVisibleCount((prev) => prev + 6);
   };
 
-  // Ürəyə basdıqda çalışan funksiya
+  // Siyahını yenidən bağlamaq (6 dənəyə endirmək) üçün funksiya
+  const handleShowLess = () => {
+    setVisibleCount(6);
+    if (sectionRef.current) {
+      sectionRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   const handleFavoriteClick = (book) => {
     const isAlreadyFav = wishlist.some((item) => item.id === book.id);
-    
-    // WishlistContext-dəki funksiyanı çağırırıq
     toggleWishlist(book);
 
-    // Əgər əvvəl yox idisə və indi əlavə olundusa modalı açırıq
     if (!isAlreadyFav) {
       setModalBook(book);
     }
@@ -39,6 +43,7 @@ export default function TodaysPicks({ onNavigate }) {
 
   return (
     <section
+      ref={sectionRef}
       style={{
         maxWidth: '1300px',
         margin: '0 auto',
@@ -107,7 +112,6 @@ export default function TodaysPicks({ onNavigate }) {
         }}
       >
         {displayedBooks.map((book) => {
-          // Kitabın favorilərdə olub-olmadığı WishlistContext-dən yoxlanılır
           const isFav = wishlist.some((item) => item.id === book.id);
 
           return (
@@ -226,9 +230,9 @@ export default function TodaysPicks({ onNavigate }) {
         })}
       </div>
 
-      {/* DAHA ÇOX GÖSTƏR DÜYMƏSİ */}
-      {visibleCount < currentBooks.length && (
-        <div style={{ textAlign: 'center' }}>
+      {/* DÜYMƏLƏR HİSSƏSİ (DAHA ÇOX GÖSTƏR & BAĞLA) */}
+      <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center', gap: '12px' }}>
+        {visibleCount < currentBooks.length && (
           <button
             onClick={handleShowMore}
             style={{
@@ -243,10 +247,29 @@ export default function TodaysPicks({ onNavigate }) {
               transition: 'all 0.2s',
             }}
           >
-            Daha çox göster
+            Daha çox göstər
           </button>
-        </div>
-      )}
+        )}
+
+        {visibleCount > 6 && (
+          <button
+            onClick={handleShowLess}
+            style={{
+              padding: '10px 28px',
+              borderRadius: '24px',
+              border: '1px solid #6b7280',
+              backgroundColor: '#fff',
+              color: '#374151',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
+          >
+            Bağla
+          </button>
+        )}
+      </div>
 
       {/* MODAL PƏNCƏRƏ */}
       {modalBook && (

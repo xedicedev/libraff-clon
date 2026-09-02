@@ -2,23 +2,30 @@ import React, { useState, useEffect } from 'react';
 import { THREE_ALMA_MULTI_DATA } from '../data/3alma';
 
 export default function ThreeAlmaSection({ onNavigate }) {
-  const { leftTop, leftBottom, center, rightTop, rightBottom } = THREE_ALMA_MULTI_DATA;
+  const { leftTop, leftBottom, center, rightTop, rightBottom } = THREE_ALMA_MULTI_DATA || {};
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
     <section
       style={{
         maxWidth: '1300px',
         margin: '0 auto',
-        padding: '40px 24px',
+        padding: isMobile ? '24px 16px' : '40px 24px',
         fontFamily: 'system-ui, -apple-system, sans-serif',
       }}
     >
       <h2
         style={{
-          fontSize: '28px',
+          fontSize: isMobile ? '22px' : '28px',
           fontWeight: '700',
           color: '#1f2937',
-          marginBottom: '24px',
+          marginBottom: isMobile ? '16px' : '24px',
         }}
       >
         <span style={{ color: '#e52e2e' }}>3alma</span> ən yenilər
@@ -27,32 +34,32 @@ export default function ThreeAlmaSection({ onNavigate }) {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 1.2fr 1fr',
+          gridTemplateColumns: isMobile ? '1fr' : '1fr 1.2fr 1fr',
           gap: '20px',
           alignItems: 'stretch',
         }}
       >
-        {/* SOL SÜTUN (2 Müstəqil Slayder Kartı) */}
+        {/* SOL SÜTUN */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <SmallCardSlider items={leftTop} onNavigate={onNavigate} />
-          <SmallCardSlider items={leftBottom} onNavigate={onNavigate} />
+          <SmallCardSlider items={leftTop} onNavigate={onNavigate} isMobile={isMobile} />
+          <SmallCardSlider items={leftBottom} onNavigate={onNavigate} isMobile={isMobile} />
         </div>
 
-        {/* ORTA SÜTUN (Müstəqil Böyük Slayder Kartı) */}
-        <CenterCardSlider items={center} onNavigate={onNavigate} />
+        {/* ORTA SÜTUN */}
+        <CenterCardSlider items={center} onNavigate={onNavigate} isMobile={isMobile} />
 
-        {/* SAĞ SÜTUN (2 Müstəqil Slayder Kartı) */}
+        {/* SAĞ SÜTUN */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <SmallCardSlider items={rightTop} onNavigate={onNavigate} />
-          <SmallCardSlider items={rightBottom} onNavigate={onNavigate} />
+          <SmallCardSlider items={rightTop} onNavigate={onNavigate} isMobile={isMobile} />
+          <SmallCardSlider items={rightBottom} onNavigate={onNavigate} isMobile={isMobile} />
         </div>
       </div>
     </section>
   );
 }
 
-// Kiçik Kart Slayderi (Müstəqil Taymer və Oxlar)
-function SmallCardSlider({ items = [], onNavigate }) {
+// Kiçik Kart Slayderi
+function SmallCardSlider({ items = [], onNavigate, isMobile }) {
   const [index, setIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -60,7 +67,7 @@ function SmallCardSlider({ items = [], onNavigate }) {
     if (isHovered || items.length <= 1) return;
     const timer = setInterval(() => {
       setIndex((prev) => (prev === items.length - 1 ? 0 : prev + 1));
-    }, 10000); // 10 saniyə
+    }, 10000);
 
     return () => clearInterval(timer);
   }, [index, isHovered, items.length]);
@@ -75,7 +82,7 @@ function SmallCardSlider({ items = [], onNavigate }) {
         position: 'relative',
         backgroundColor: currentBook.bgColor || '#f9fafb',
         borderRadius: '16px',
-        padding: '20px',
+        padding: isMobile ? '16px' : '20px',
         display: 'flex',
         gap: '16px',
         alignItems: 'center',
@@ -85,7 +92,7 @@ function SmallCardSlider({ items = [], onNavigate }) {
         transition: 'background-color 0.4s ease',
       }}
     >
-      {/* Sol Ox (Yalnız bu kartın üzərinə maus gələndə görünür) */}
+      {/* Sol Ox */}
       {items.length > 1 && (
         <button
           onClick={(e) => {
@@ -109,8 +116,8 @@ function SmallCardSlider({ items = [], onNavigate }) {
             justifyContent: 'center',
             color: '#374151',
             zIndex: 10,
-            opacity: isHovered ? 1 : 0,
-            pointerEvents: isHovered ? 'auto' : 'none',
+            opacity: isMobile || isHovered ? 1 : 0,
+            pointerEvents: isMobile || isHovered ? 'auto' : 'none',
             transition: 'opacity 0.2s ease',
           }}
         >
@@ -120,13 +127,13 @@ function SmallCardSlider({ items = [], onNavigate }) {
 
       {/* Kontent */}
       <div
-        onClick={() => onNavigate && onNavigate('details', currentBook)}
+        onClick={() => onNavigate && onNavigate('product-detail', currentBook)}
         style={{ flex: 1, overflow: 'hidden', cursor: 'pointer' }}
       >
-        <span style={{ fontSize: '13px', color: '#6b7280', display: 'block', marginBottom: '4px' }}>
+        <span style={{ fontSize: '12px', color: '#6b7280', display: 'block', marginBottom: '4px' }}>
           {currentBook.author}
         </span>
-        <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#1f2937', margin: '0 0 8px 0' }}>
+        <h3 style={{ fontSize: isMobile ? '15px' : '16px', fontWeight: '700', color: '#1f2937', margin: '0 0 6px 0' }}>
           {currentBook.title}
         </h3>
         <p
@@ -146,8 +153,8 @@ function SmallCardSlider({ items = [], onNavigate }) {
       </div>
 
       <div
-        onClick={() => onNavigate && onNavigate('details', currentBook)}
-        style={{ width: '90px', height: '120px', flexShrink: 0, cursor: 'pointer' }}
+        onClick={() => onNavigate && onNavigate('product-detail', currentBook)}
+        style={{ width: isMobile ? '75px' : '90px', height: isMobile ? '105px' : '120px', flexShrink: 0, cursor: 'pointer' }}
       >
         <img
           src={currentBook.image}
@@ -186,8 +193,8 @@ function SmallCardSlider({ items = [], onNavigate }) {
             justifyContent: 'center',
             color: '#374151',
             zIndex: 10,
-            opacity: isHovered ? 1 : 0,
-            pointerEvents: isHovered ? 'auto' : 'none',
+            opacity: isMobile || isHovered ? 1 : 0,
+            pointerEvents: isMobile || isHovered ? 'auto' : 'none',
             transition: 'opacity 0.2s ease',
           }}
         >
@@ -198,8 +205,8 @@ function SmallCardSlider({ items = [], onNavigate }) {
   );
 }
 
-// Orta Böyük Kart Slayderi (Müstəqil Taymer və Oxlar)
-function CenterCardSlider({ items = [], onNavigate }) {
+// Orta Böyük Kart Slayderi
+function CenterCardSlider({ items = [], onNavigate, isMobile }) {
   const [index, setIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -207,7 +214,7 @@ function CenterCardSlider({ items = [], onNavigate }) {
     if (isHovered || items.length <= 1) return;
     const timer = setInterval(() => {
       setIndex((prev) => (prev === items.length - 1 ? 0 : prev + 1));
-    }, 10000); // 10 saniyə
+    }, 10000);
 
     return () => clearInterval(timer);
   }, [index, isHovered, items.length]);
@@ -222,13 +229,13 @@ function CenterCardSlider({ items = [], onNavigate }) {
         position: 'relative',
         backgroundColor: currentBook.bgColor || '#fef3c7',
         borderRadius: '16px',
-        padding: '32px 24px',
+        padding: isMobile ? '20px 16px' : '32px 24px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         textAlign: 'center',
-        minHeight: '380px',
+        minHeight: isMobile ? '300px' : '380px',
         boxSizing: 'border-box',
         transition: 'background-color 0.4s ease',
       }}
@@ -242,11 +249,11 @@ function CenterCardSlider({ items = [], onNavigate }) {
           }}
           style={{
             position: 'absolute',
-            left: '12px',
+            left: '10px',
             top: '50%',
             transform: 'translateY(-50%)',
-            width: '36px',
-            height: '36px',
+            width: '32px',
+            height: '32px',
             borderRadius: '50%',
             backgroundColor: '#ffffff',
             border: 'none',
@@ -257,8 +264,8 @@ function CenterCardSlider({ items = [], onNavigate }) {
             justifyContent: 'center',
             color: '#374151',
             zIndex: 10,
-            opacity: isHovered ? 1 : 0,
-            pointerEvents: isHovered ? 'auto' : 'none',
+            opacity: isMobile || isHovered ? 1 : 0,
+            pointerEvents: isMobile || isHovered ? 'auto' : 'none',
             transition: 'opacity 0.2s ease',
           }}
         >
@@ -268,10 +275,10 @@ function CenterCardSlider({ items = [], onNavigate }) {
 
       {/* Şəkil */}
       <div
-        onClick={() => onNavigate && onNavigate('details', currentBook)}
+        onClick={() => onNavigate && onNavigate('product-detail', currentBook)}
         style={{
           cursor: 'pointer',
-          height: '220px',
+          height: isMobile ? '170px' : '220px',
           width: '100%',
           display: 'flex',
           alignItems: 'center',
@@ -294,26 +301,25 @@ function CenterCardSlider({ items = [], onNavigate }) {
 
       {/* Mətn */}
       <div
-        onClick={() => onNavigate && onNavigate('details', currentBook)}
+        onClick={() => onNavigate && onNavigate('product-detail', currentBook)}
         style={{
           cursor: 'pointer',
           width: '100%',
-          height: '110px',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'flex-start',
           overflow: 'hidden',
         }}
       >
-        <span style={{ fontSize: '14px', color: '#6b7280', display: 'block', marginBottom: '2px' }}>
+        <span style={{ fontSize: '13px', color: '#6b7280', display: 'block', marginBottom: '2px' }}>
           {currentBook.author}
         </span>
-        <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#1f2937', margin: '0 0 6px 0' }}>
+        <h3 style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: '700', color: '#1f2937', margin: '0 0 6px 0' }}>
           {currentBook.title}
         </h3>
         <p
           style={{
-            fontSize: '13px',
+            fontSize: '12px',
             color: '#4b5563',
             margin: 0,
             lineHeight: '1.4',
@@ -336,11 +342,11 @@ function CenterCardSlider({ items = [], onNavigate }) {
           }}
           style={{
             position: 'absolute',
-            right: '12px',
+            right: '10px',
             top: '50%',
             transform: 'translateY(-50%)',
-            width: '36px',
-            height: '36px',
+            width: '32px',
+            height: '32px',
             borderRadius: '50%',
             backgroundColor: '#ffffff',
             border: 'none',
@@ -351,8 +357,8 @@ function CenterCardSlider({ items = [], onNavigate }) {
             justifyContent: 'center',
             color: '#374151',
             zIndex: 10,
-            opacity: isHovered ? 1 : 0,
-            pointerEvents: isHovered ? 'auto' : 'none',
+            opacity: isMobile || isHovered ? 1 : 0,
+            pointerEvents: isMobile || isHovered ? 'auto' : 'none',
             transition: 'opacity 0.2s ease',
           }}
         >

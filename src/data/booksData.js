@@ -1,5 +1,3 @@
-// src/data/booksData.js
-
 export const BOOKS_DATA = {
   az: [
     {
@@ -95,7 +93,7 @@ export const BOOKS_DATA = {
       title: 'Поллианна. Поллианна Вырастает',
       price: 8.41,
       oldPrice: 9.90,
-      image: 'https://www.libraff.az/images/thumbnails/600/600/from_1c/274eed5a-d3e6-11eb-a4ec-503eaa120fc7_1_1772485291.jpg.webp',
+      image: 'https://www.libraff.az/images/thumbnails/400/600/from_1c/9548ea24-2908-11ed-a50a-503eaa120fc7_1.jpg.webp',
     },
     {
       id: 102,
@@ -188,7 +186,7 @@ export const BOOKS_DATA = {
       title: 'Kaderini Sev Çünkü Aslında Hayatın Bu - Hayatı ve İnsanı Aşmanın Felsefesi',
       price: 10.11,
       oldPrice: 11.90,
-      image: 'https://www.libraff.az/images/thumbnails/600/600/from_1c/32940f35-39e8-11ef-a54f-503eaa128442_1_1775250022.jpg.webp',
+      image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbJu1WKuycZBuvDCuJYTMrBIunx2mZLKwKcvWC3mxlJrPQHi0cn_2S8Pmf&s=10',
     },
     {
       id: 203,

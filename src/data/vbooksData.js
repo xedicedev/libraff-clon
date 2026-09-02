@@ -18,7 +18,7 @@ export const BOOKS_DATA = [
     oldPrice: 31.90,
     isMostViewed: true,
     categoryId: 'novels',
-    image: 'https://upload.wikimedia.org/wikipedia/tr/thumb/a/a9/Masumiyet_M%C3%BCzesi_kapak.jpg/500px-Masumiyet_M%C3%BCzesi_kapak.jpg?utm_source=tr.wikipedia.org&utm_campaign=parser&utm_content=thumbnail',
+    image: 'https://www.libraff.az/images/thumbnails/400/600/from_1c/5a5b8a4b-5052-11eb-a4d2-503eaa128442_1_1787605204.jpg.webp',
   },
   {
     id: 3,
@@ -68,7 +68,7 @@ export const BOOKS_DATA = [
   { id: 10, title: 'Dahilər və Autsayderlər', categoryId: 'personal_dev', price: 13.50, image: 'https://cdn.insales-shop.ru/r/3-oLmEm7P1E/rs:fit:1140:1140:1/q:80/plain/images/products/1/6231/257521751/Malkolm_Dahiler_ve_autsayderler_Esas.png@webp' },
   { id: 11, title: '1984', categoryId: 'fiction', price: 14.00, image: 'https://cdn.insales-shop.ru/r/2UWQMgz_CPs/rs:fit:570:570:1/q:80/plain/images/products/1/8/211730440/9780141036144.jpg@jpg' },
   { id: 12, title: 'Harri Potter və Fəlsəfə Daşı', categoryId: 'sci_fi', price: 16.50, image: 'https://www.qanun.az/images/news/compressed/2024-11-25-11-39-041732520344.jpg' },
-  { id: 13, title: 'Balaca Şahzadə', categoryId: 'discounts', price: 6.50, image: 'https://www.3alma.az/storage/799/conversions/balaca-sahzade-front-book.jpg' },
+  { id: 13, title: 'Balaca Şahzadə', categoryId: 'discounts', price: 6.50, image: 'https://www.libraff.az/images/thumbnails/400/600/from_1c/fc7e8998-284c-11ed-a50a-503eaa120fc7_1_1760391148.jpg.webp' },
 ];
 
 // Lazım olduqda yalnız "Həftənin ən çox baxılanları"nı süzmək üçün funksiya:

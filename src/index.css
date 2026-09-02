@@ -13,3 +13,13 @@ body, #root {
   padding: 0 !important;
   overflow-x: hidden;
 }
+/* Chrome, Safari, Opera və təzə Edge üçün */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* Firefox və IE/Edge üçün */
+html, body {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE və Edge */
+}
