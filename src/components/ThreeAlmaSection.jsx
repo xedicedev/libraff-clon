@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { THREE_ALMA_MULTI_DATA } from '../data/3alma';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function ThreeAlmaSection({ onNavigate }) {
+  const { t } = useLanguage();
   const { leftTop, leftBottom, center, rightTop, rightBottom } = THREE_ALMA_MULTI_DATA || {};
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -28,7 +30,7 @@ export default function ThreeAlmaSection({ onNavigate }) {
           marginBottom: isMobile ? '16px' : '24px',
         }}
       >
-        <span style={{ color: '#e52e2e' }}>3alma</span> ən yenilər
+        <span style={{ color: '#e52e2e' }}>3alma</span> {t.threeAlmaTitleSuffix}
       </h2>
 
       <div
@@ -41,17 +43,17 @@ export default function ThreeAlmaSection({ onNavigate }) {
       >
         {/* SOL SÜTUN */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <SmallCardSlider items={leftTop} onNavigate={onNavigate} isMobile={isMobile} />
-          <SmallCardSlider items={leftBottom} onNavigate={onNavigate} isMobile={isMobile} />
+          <SmallCardSlider items={leftTop} onNavigate={onNavigate} isMobile={isMobile} t={t} />
+          <SmallCardSlider items={leftBottom} onNavigate={onNavigate} isMobile={isMobile} t={t} />
         </div>
 
         {/* ORTA SÜTUN */}
-        <CenterCardSlider items={center} onNavigate={onNavigate} isMobile={isMobile} />
+        <CenterCardSlider items={center} onNavigate={onNavigate} isMobile={isMobile} t={t} />
 
         {/* SAĞ SÜTUN */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <SmallCardSlider items={rightTop} onNavigate={onNavigate} isMobile={isMobile} />
-          <SmallCardSlider items={rightBottom} onNavigate={onNavigate} isMobile={isMobile} />
+          <SmallCardSlider items={rightTop} onNavigate={onNavigate} isMobile={isMobile} t={t} />
+          <SmallCardSlider items={rightBottom} onNavigate={onNavigate} isMobile={isMobile} t={t} />
         </div>
       </div>
     </section>
@@ -59,9 +61,21 @@ export default function ThreeAlmaSection({ onNavigate }) {
 }
 
 // Kiçik Kart Slayderi
-function SmallCardSlider({ items = [], onNavigate, isMobile }) {
+function SmallCardSlider({ items = [], onNavigate, isMobile, t }) {
   const [index, setIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  
+  const [prices, setPrices] = useState({});
+  const [showPrices, setShowPrices] = useState({});
+
+  useEffect(() => {
+    const newPrices = {};
+    items.forEach((book, idx) => {
+      const key = book.id || book.title || idx;
+      newPrices[key] = book.price ? Number(book.price) : Number((Math.random() * (25 - 8) + 8).toFixed(2));
+    });
+    setPrices(newPrices);
+  }, [items]);
 
   useEffect(() => {
     if (isHovered || items.length <= 1) return;
@@ -73,6 +87,9 @@ function SmallCardSlider({ items = [], onNavigate, isMobile }) {
   }, [index, isHovered, items.length]);
 
   const currentBook = items[index] || {};
+  const currentKey = currentBook.id || currentBook.title || index;
+  const bookPrice = prices[currentKey] || 0;
+  const isPriceVisible = !!showPrices[currentKey];
 
   return (
     <div
@@ -127,33 +144,54 @@ function SmallCardSlider({ items = [], onNavigate, isMobile }) {
 
       {/* Kontent */}
       <div
-        onClick={() => onNavigate && onNavigate('product-detail', currentBook)}
-        style={{ flex: 1, overflow: 'hidden', cursor: 'pointer' }}
+        onClick={() => onNavigate && onNavigate('product-detail', { ...currentBook, price: bookPrice })}
+        style={{ flex: 1, overflow: 'hidden', cursor: 'pointer', display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}
       >
-        <span style={{ fontSize: '12px', color: '#6b7280', display: 'block', marginBottom: '4px' }}>
-          {currentBook.author}
-        </span>
-        <h3 style={{ fontSize: isMobile ? '15px' : '16px', fontWeight: '700', color: '#1f2937', margin: '0 0 6px 0' }}>
-          {currentBook.title}
-        </h3>
-        <p
-          style={{
-            fontSize: '12px',
-            color: '#6b7280',
-            margin: 0,
-            lineHeight: '1.4',
-            display: '-webkit-box',
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
+        <div>
+          <span style={{ fontSize: '12px', color: '#6b7280', display: 'block', marginBottom: '4px' }}>
+            {currentBook.author}
+          </span>
+          <h3 style={{ fontSize: isMobile ? '15px' : '16px', fontWeight: '700', color: '#1f2937', margin: '0 0 6px 0' }}>
+            {currentBook.title}
+          </h3>
+          <p
+            style={{
+              fontSize: '12px',
+              color: '#6b7280',
+              margin: 0,
+              lineHeight: '1.4',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
+            {currentBook.description}
+          </p>
+        </div>
+
+        {/* Qiymət hissəsi */}
+        <div 
+          style={{ marginTop: '8px' }} 
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowPrices((prev) => ({ ...prev, [currentKey]: true }));
           }}
         >
-          {currentBook.description}
-        </p>
+          {isPriceVisible ? (
+            <span style={{ fontSize: '14px', fontWeight: '700', color: '#e52e2e' }}>
+              {bookPrice.toFixed(2)} ₼
+            </span>
+          ) : (
+            <span style={{ fontSize: '12px', fontWeight: '500', color: '#e52e2e', borderBottom: '1px dashed #e52e2e', cursor: 'pointer' }}>
+              {t.viewPrice}
+            </span>
+          )}
+        </div>
       </div>
 
       <div
-        onClick={() => onNavigate && onNavigate('product-detail', currentBook)}
+        onClick={() => onNavigate && onNavigate('product-detail', { ...currentBook, price: bookPrice })}
         style={{ width: isMobile ? '75px' : '90px', height: isMobile ? '105px' : '120px', flexShrink: 0, cursor: 'pointer' }}
       >
         <img
@@ -206,9 +244,20 @@ function SmallCardSlider({ items = [], onNavigate, isMobile }) {
 }
 
 // Orta Böyük Kart Slayderi
-function CenterCardSlider({ items = [], onNavigate, isMobile }) {
+function CenterCardSlider({ items = [], onNavigate, isMobile, t }) {
   const [index, setIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const [prices, setPrices] = useState({});
+  const [showPrices, setShowPrices] = useState({});
+
+  useEffect(() => {
+    const newPrices = {};
+    items.forEach((book, idx) => {
+      const key = book.id || book.title || idx;
+      newPrices[key] = book.price ? Number(book.price) : Number((Math.random() * (35 - 12) + 12).toFixed(2));
+    });
+    setPrices(newPrices);
+  }, [items]);
 
   useEffect(() => {
     if (isHovered || items.length <= 1) return;
@@ -220,6 +269,9 @@ function CenterCardSlider({ items = [], onNavigate, isMobile }) {
   }, [index, isHovered, items.length]);
 
   const currentBook = items[index] || {};
+  const currentKey = currentBook.id || currentBook.title || index;
+  const bookPrice = prices[currentKey] || 0;
+  const isPriceVisible = !!showPrices[currentKey];
 
   return (
     <div
@@ -275,7 +327,7 @@ function CenterCardSlider({ items = [], onNavigate, isMobile }) {
 
       {/* Şəkil */}
       <div
-        onClick={() => onNavigate && onNavigate('product-detail', currentBook)}
+        onClick={() => onNavigate && onNavigate('product-detail', { ...currentBook, price: bookPrice })}
         style={{
           cursor: 'pointer',
           height: isMobile ? '170px' : '220px',
@@ -301,9 +353,7 @@ function CenterCardSlider({ items = [], onNavigate, isMobile }) {
 
       {/* Mətn */}
       <div
-        onClick={() => onNavigate && onNavigate('product-detail', currentBook)}
         style={{
-          cursor: 'pointer',
           width: '100%',
           display: 'flex',
           flexDirection: 'column',
@@ -311,26 +361,50 @@ function CenterCardSlider({ items = [], onNavigate, isMobile }) {
           overflow: 'hidden',
         }}
       >
-        <span style={{ fontSize: '13px', color: '#6b7280', display: 'block', marginBottom: '2px' }}>
-          {currentBook.author}
-        </span>
-        <h3 style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: '700', color: '#1f2937', margin: '0 0 6px 0' }}>
-          {currentBook.title}
-        </h3>
-        <p
-          style={{
-            fontSize: '12px',
-            color: '#4b5563',
-            margin: 0,
-            lineHeight: '1.4',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
+        <div 
+          onClick={() => onNavigate && onNavigate('product-detail', { ...currentBook, price: bookPrice })}
+          style={{ cursor: 'pointer' }}
+        >
+          <span style={{ fontSize: '13px', color: '#6b7280', display: 'block', marginBottom: '2px' }}>
+            {currentBook.author}
+          </span>
+          <h3 style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: '700', color: '#1f2937', margin: '0 0 4px 0' }}>
+            {currentBook.title}
+          </h3>
+          <p
+            style={{
+              fontSize: '12px',
+              color: '#4b5563',
+              margin: '0 0 8px 0',
+              lineHeight: '1.4',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
+            {currentBook.description}
+          </p>
+        </div>
+
+        {/* Qiymət hissəsi */}
+        <div 
+          style={{ marginTop: '4px' }}
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowPrices((prev) => ({ ...prev, [currentKey]: true }));
           }}
         >
-          {currentBook.description}
-        </p>
+          {isPriceVisible ? (
+            <span style={{ fontSize: '15px', fontWeight: '700', color: '#e52e2e' }}>
+              {bookPrice.toFixed(2)} ₼
+            </span>
+          ) : (
+            <span style={{ fontSize: '13px', fontWeight: '500', color: '#e52e2e', borderBottom: '1px dashed #e52e2e', cursor: 'pointer' }}>
+              {t.viewPrice}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Sağ Ox */}

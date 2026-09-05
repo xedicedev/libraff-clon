@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { TEAS_PRESS_BOOKS } from '../data/teasPress';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function TeasPressSection({ onNavigate }) {
-  const [books, setBooks] = useState(TEAS_PRESS_BOOKS);
-  const [isExpanded, setIsExpanded] = useState(false); // Tam açılıb-açılmadığını izləyir
+  const { t } = useLanguage();
+  const [books, setBooks] = useState(TEAS_PRESS_BOOKS || []);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleFavorite = (id) => {
     setBooks((prev) =>
@@ -13,8 +15,11 @@ export default function TeasPressSection({ onNavigate }) {
     );
   };
 
-  // Açılmış halda bütün kitablar, əks halda ilk 6-sı görünür
   const visibleBooks = isExpanded ? books : books.slice(0, 6);
+
+  if (!books || books.length === 0) {
+    return <div style={{ padding: '20px', textAlign: 'center' }}>{t.noBooks}</div>;
+  }
 
   return (
     <section
@@ -27,7 +32,6 @@ export default function TeasPressSection({ onNavigate }) {
         fontFamily: 'system-ui, -apple-system, sans-serif',
       }}
     >
-      {/* BAŞLIQ */}
       <h2
         style={{
           fontSize: '28px',
@@ -36,10 +40,9 @@ export default function TeasPressSection({ onNavigate }) {
           marginBottom: '28px',
         }}
       >
-        TEAS Press
+        {t.teasPressTitle}
       </h2>
 
-      {/* KİTABLAR ŞƏBƏKƏSİ */}
       <div
         style={{
           display: 'grid',
@@ -51,26 +54,38 @@ export default function TeasPressSection({ onNavigate }) {
         {visibleBooks.map((book) => (
           <div
             key={book.id}
+            onClick={() => {
+              console.log('Book clicked:', book); // Debug log to test click tracking
+              if (typeof onNavigate === 'function') {
+                onNavigate('product-detail', book);
+              } else {
+                console.warn('onNavigate prop is missing or not a function');
+              }
+            }}
             style={{
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
               height: '100%',
+              cursor: 'pointer',
+              backgroundColor: '#ffffff',
+              border: '1px solid #eaeaea',
+              borderRadius: '16px',
+              padding: '12px',
+              boxSizing: 'border-box',
+              pointerEvents: 'auto',
             }}
           >
-            {/* ŞƏKİL KONTEYNERİ */}
             <div
-              onClick={() => onNavigate && onNavigate('details', book)}
               style={{
                 position: 'relative',
                 backgroundColor: '#f8f9fa',
-                borderRadius: '16px',
+                borderRadius: '12px',
                 padding: '16px',
-                cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                height: '280px',
+                height: '260px',
                 boxSizing: 'border-box',
                 marginBottom: '12px',
                 overflow: 'hidden',
@@ -109,25 +124,23 @@ export default function TeasPressSection({ onNavigate }) {
               />
             </div>
 
-            {/* MƏTLƏB VƏ QİYMƏT */}
             <div
               style={{
                 display: 'flex',
                 flexDirection: 'column',
                 flexGrow: 1,
                 justifyContent: 'space-between',
+                padding: '0 4px 4px 4px',
               }}
             >
               <div>
                 <h3
-                  onClick={() => onNavigate && onNavigate('details', book)}
                   style={{
                     fontSize: '14px',
                     fontWeight: '500',
                     color: '#212529',
                     margin: '0 0 6px 0',
                     lineHeight: '1.4',
-                    cursor: 'pointer',
                     display: '-webkit-box',
                     WebkitLineClamp: 2,
                     WebkitBoxOrient: 'vertical',
@@ -153,7 +166,7 @@ export default function TeasPressSection({ onNavigate }) {
                     <span style={{ fontWeight: '600', color: '#212529' }}>
                       {book.rating}
                     </span>
-                    <span>(Rəylər: {book.reviewsCount})</span>
+                    <span>({t.reviewsText}: {book.reviewsCount})</span>
                   </div>
                 )}
               </div>
@@ -173,7 +186,7 @@ export default function TeasPressSection({ onNavigate }) {
                     color: '#212529',
                   }}
                 >
-                  {book.currentPrice.toFixed(2)} ₼
+                  {book.currentPrice ? book.currentPrice.toFixed(2) : '0.00'} ₼
                 </span>
                 {book.originalPrice && (
                   <span
@@ -192,7 +205,6 @@ export default function TeasPressSection({ onNavigate }) {
         ))}
       </div>
 
-      {/* DAHA ÇOX GÖSTƏR / BAĞLA DÜYMƏSİ */}
       {books.length > 6 && (
         <div
           style={{
@@ -214,16 +226,8 @@ export default function TeasPressSection({ onNavigate }) {
               cursor: 'pointer',
               transition: 'all 0.2s ease',
             }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#e52e2e';
-              e.target.style.color = '#ffffff';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = '#ffffff';
-              e.target.style.color = '#e52e2e';
-            }}
           >
-            {isExpanded ? 'Bağla' : 'Daha çox göstər'}
+            {isExpanded ? t.collapse : t.showMore}
           </button>
         </div>
       )}

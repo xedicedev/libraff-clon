@@ -32,7 +32,7 @@ const ALL_BOOKS = [
   ...(Array.isArray(books5) ? books5 : []),
 ];
 
-export default function Navbar({ searchTerm, setSearchTerm, onNavigate }) {
+export default function Navbar({ searchTerm, setSearchTerm, onNavigate, onOpenAuth }) {
   const { cartCount } = useCart();
   const { wishlist } = useWishlist();
   const { currentLang, changeLanguage, t } = useLanguage();
@@ -382,7 +382,7 @@ export default function Navbar({ searchTerm, setSearchTerm, onNavigate }) {
           )}
         </div>
 
-        {/* Right Icons (Mobil rejimdə avtomatik sağa sıxlaşır) */}
+        {/* Right Icons */}
         <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
@@ -391,8 +391,12 @@ export default function Navbar({ searchTerm, setSearchTerm, onNavigate }) {
           flexShrink: 0,
           marginLeft: isMobile ? 'auto' : '0' 
         }}>
+          {/* Masaüstü Hesab Düyməsi */}
           {!isMobile && (
-            <button style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', color: '#374151' }}>
+            <button 
+              onClick={() => onOpenAuth && onOpenAuth()}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', color: '#374151' }}
+            >
               <User size={20} />
               <span>{t.myAccount}</span>
               <ChevronDown size={14} color="#9ca3af" />
@@ -474,7 +478,14 @@ export default function Navbar({ searchTerm, setSearchTerm, onNavigate }) {
             <span>{t.catalog}</span>
           </button>
 
-          <button style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', backgroundColor: '#f9fafb', border: '1px solid #f3f4f6', borderRadius: '8px', fontSize: '14px', color: '#374151', fontWeight: 500 }}>
+          {/* Mobil Hesab Düyməsi (Login Modalı Açır) */}
+          <button 
+            onClick={() => {
+              if (onOpenAuth) onOpenAuth();
+              setIsMobileMenuOpen(false);
+            }}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', backgroundColor: '#f9fafb', border: '1px solid #f3f4f6', borderRadius: '8px', fontSize: '14px', color: '#374151', fontWeight: 500, cursor: 'pointer' }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <User size={18} />
               <span>{t.myAccount}</span>

@@ -54,7 +54,7 @@ export const booksData = [
     category: "Klassiklər",
     price: 17.20,
     oldPrice: null,
-    coverImage: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?w=500&q=80",
+    coverImage: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbo0A2PPd55256Xdyp1lLoKslpkyutyeUXzc3FMnEiTsw_EeCGHU8K7LU&s=10",
     language: "Azərbaycan",
     binding: "Bərk",
     rating: 4.8,

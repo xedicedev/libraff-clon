@@ -15,6 +15,16 @@ export default function ClassicsPage({ onNavigate, searchTerm = '', onAddToCart 
     return isClassic && (title.includes(query) || author.includes(query));
   });
 
+  const handleAddToCart = (e, book) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (typeof onAddToCart === 'function') {
+      onAddToCart(book);
+    } else {
+      console.warn('onAddToCart prop-u ClassicsPage komponentinə ötürülməyib!');
+    }
+  };
+
   return (
     <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '32px 16px', fontFamily: 'sans-serif', minHeight: '80vh' }}>
       
@@ -158,10 +168,8 @@ export default function ClassicsPage({ onNavigate, searchTerm = '', onAddToCart 
 
                 {/* SƏBƏTƏ ƏLAVƏ ET DÜYMƏSİ */}
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (onAddToCart) onAddToCart(book);
-                  }}
+                  type="button"
+                  onClick={(e) => handleAddToCart(e, book)}
                   style={{
                     width: '100%',
                     backgroundColor: '#ef3842',

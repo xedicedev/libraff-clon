@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { BookOpen, Filter, ArrowUpDown, Heart, ShoppingBag } from 'lucide-react';
+import { BookOpen, Filter, ArrowUpDown, Heart, ShoppingBag, Check } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 import { booksData as books1 } from '../data/books';
 import { BOOKS_DATA as books2 } from '../data/booksData';
@@ -19,32 +20,67 @@ const ALL_BOOKS = [
   ...(Array.isArray(books5) ? books5 : []),
 ];
 
-export default function Catalog({ onNavigate }) {
+export default function Catalog({ onNavigate, onAddToCart, onToggleFavorite, favoriteIds = [], cartItemIds = [] }) {
+  const { currentLang, t } = useLanguage();
+
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('default');
 
+  // Lokal state-ləri prop-lardan gələn məlumatlarla inisializasiya edirik
+  const [favorites, setFavorites] = useState(favoriteIds);
+  const [cartItems, setCartItems] = useState(cartItemIds);
+
   // Ədəbiyyat kateqoriyalarının siyahısı
   const categoriesList = [
-    { key: 'all', label: 'Bütün ədəbiyyatlar' },
+    { key: 'all', label: t.catalog || 'Bütün ədəbiyyatlar' },
     { key: 'az', label: 'Azərbaycan ədəbiyyatı' },
     { key: 'tr', label: 'Türk ədəbiyyatı' },
     { key: 'child', label: 'Uşaq ədəbiyyatı' },
     { key: 'ru', label: 'Rus ədəbiyyatı' },
     { key: 'world', label: 'Dünya ədəbiyyatı' },
-    { key: 'classic', label: 'Klassiklər' },
+    { key: 'classic', label: t.classics || 'Klassiklər' },
     { key: 'fiction', label: 'Bədii ədəbiyyat' }
   ];
 
-  // Ədəbiyyata və xüsusilə Türk/Uşaq ədəbiyyatına görə dəqiq filtrləmə
+  // Favorilərə əlavə etmə / çıxarma
+  const handleFavoriteClick = (e, book, bookId) => {
+    e.stopPropagation();
+    
+    // 1. Lokal state-də düymə görünüşünü dərhal dəyişirik
+    setFavorites((prev) =>
+      prev.includes(bookId) ? prev.filter((id) => id !== bookId) : [...prev, bookId]
+    );
+
+    // 2. Valideyn komponentə (App/WishlistContext) kitab obyektini ötürürük
+    if (onToggleFavorite) {
+      onToggleFavorite(book);
+    }
+  };
+
+  // Səbətə əlavə etmə
+  const handleAddToCartClick = (e, book, bookId) => {
+    e.stopPropagation();
+
+    // 1. Lokal state-də səbət statusunu dərhal yeniləyirik
+    if (!cartItems.includes(bookId)) {
+      setCartItems((prev) => [...prev, bookId]);
+    }
+
+    // 2. Valideyn komponentə (App/CartContext) kitab obyektini ötürürük
+    if (onAddToCart) {
+      onAddToCart(book);
+    }
+  };
+
+  // Ədəbiyyata görə filtrləmə
   const filteredBooks = ALL_BOOKS.filter(book => {
     if (selectedCategory === 'all') return true;
 
     const bookLang = (book.lang || book.language || '').toLowerCase();
-    const bookCat = (book.category || book.langCategory || '').toLowerCase();
-    const bookTitle = (book.title || book.name || '').toLowerCase();
+    const bookCat = (typeof book.category === 'object' ? book.category[currentLang] : (book.category || book.langCategory || '')).toLowerCase();
+    const bookTitle = (typeof book.title === 'object' ? book.title[currentLang] : (book.title || book.name || '')).toLowerCase();
     const bookPublisher = (book.publisher || book.publisherName || '').toLowerCase();
 
-    // Türk ədəbiyyatı: Türk dilində olan, türk nəşriyyatlı və ya kateqoriyasında türk qeyd olunanlar
     if (selectedCategory === 'tr') {
       return (
         bookLang === 'tr' ||
@@ -59,7 +95,6 @@ export default function Catalog({ onNavigate }) {
       );
     }
 
-    // Uşaq ədəbiyyatı
     if (selectedCategory === 'child') {
       return (
         bookCat.includes('uşaq') ||
@@ -71,7 +106,6 @@ export default function Catalog({ onNavigate }) {
       );
     }
 
-    // Azərbaycan ədəbiyyatı
     if (selectedCategory === 'az') {
       return (
         bookCat.includes('azərbaycan') ||
@@ -81,7 +115,6 @@ export default function Catalog({ onNavigate }) {
       );
     }
 
-    // Rus ədəbiyyatı
     if (selectedCategory === 'ru') {
       return (
         bookCat.includes('rus') ||
@@ -91,7 +124,6 @@ export default function Catalog({ onNavigate }) {
       );
     }
 
-    // Dünya ədəbiyyatı
     if (selectedCategory === 'world') {
       return (
         bookCat.includes('dünya') ||
@@ -100,7 +132,6 @@ export default function Catalog({ onNavigate }) {
       );
     }
 
-    // Klassiklər
     if (selectedCategory === 'classic') {
       return (
         bookCat.includes('klassik') ||
@@ -109,7 +140,6 @@ export default function Catalog({ onNavigate }) {
       );
     }
 
-    // Bədii ədəbiyyat
     if (selectedCategory === 'fiction') {
       return (
         bookCat.includes('bədii') ||
@@ -121,7 +151,7 @@ export default function Catalog({ onNavigate }) {
     return true;
   });
 
-  // Sıralama məntiqi
+  // Sıralama
   const sortedBooks = [...filteredBooks].sort((a, b) => {
     const priceA = parseFloat(a.price) || 0;
     const priceB = parseFloat(b.price) || 0;
@@ -129,8 +159,8 @@ export default function Catalog({ onNavigate }) {
     if (sortBy === 'price-low') return priceA - priceB;
     if (sortBy === 'price-high') return priceB - priceA;
     if (sortBy === 'title') {
-      const titleA = a.title || a.name || '';
-      const titleB = b.title || b.name || '';
+      const titleA = typeof a.title === 'object' ? a.title[currentLang] : (a.title || a.name || '');
+      const titleB = typeof b.title === 'object' ? b.title[currentLang] : (b.title || b.name || '');
       return titleA.localeCompare(titleB);
     }
     return 0;
@@ -142,14 +172,16 @@ export default function Catalog({ onNavigate }) {
         
         {/* Breadcrumb */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#6c757d', marginBottom: '12px' }}>
-          <span onClick={() => onNavigate && onNavigate('home')} style={{ cursor: 'pointer' }}>Əsas səhifə</span>
+          <span onClick={() => onNavigate && onNavigate('home')} style={{ cursor: 'pointer' }}>
+            {currentLang === 'AZ' ? 'Əsas səhifə' : currentLang === 'RU' ? 'Главная' : 'Home'}
+          </span>
           <span>&gt;</span>
-          <span style={{ color: '#0d1222', fontWeight: 600 }}>Kataloq</span>
+          <span style={{ color: '#0d1222', fontWeight: 600 }}>{t.catalog}</span>
         </div>
 
         {/* Title */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '20px' }}>
-          <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#0d1222', margin: 0 }}>Kitab Kataloqu</h1>
+          <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#0d1222', margin: 0 }}>{t.catalog}</h1>
           <span style={{ fontSize: '13px', color: '#6c757d' }}>
             Toplam <strong>{sortedBooks.length}</strong> kitab tapıldı
           </span>
@@ -158,7 +190,7 @@ export default function Catalog({ onNavigate }) {
         {/* Filter Bar */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
           
-          {/* Kateqoriya (Ədəbiyyat) Filtri */}
+          {/* Kateqoriya Filtri */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Filter size={16} color="#e51937" />
             <span style={{ fontSize: '13px', fontWeight: 700, color: '#0d1222' }}>Ədəbiyyat:</span>
@@ -220,12 +252,17 @@ export default function Catalog({ onNavigate }) {
             gap: '20px'
           }}>
             {sortedBooks.map((book, index) => {
-              const title = book.title || book.name || 'Adsız Kitab';
+              const bookId = book.id || `book-${index}`;
+              const title = typeof book.title === 'object' ? book.title[currentLang] : (book.title || book.name || 'Adsız Kitab');
+              const author = typeof book.author === 'object' ? book.author[currentLang] : (book.author || 'Müəllif qeyd edilməyib');
               const image = book.coverImage || book.image || book.img;
+              
+              const isFav = favorites.includes(bookId);
+              const isInCart = cartItems.includes(bookId);
 
               return (
                 <div
-                  key={`${book.id || 'cat-book'}-${index}`}
+                  key={bookId}
                   onClick={() => onNavigate && onNavigate('product-detail', book)}
                   style={{
                     backgroundColor: '#fff',
@@ -233,7 +270,7 @@ export default function Catalog({ onNavigate }) {
                     padding: '12px',
                     display: 'flex',
                     flexDirection: 'column',
-                    justify: 'space-between',
+                    justifyContent: 'space-between',
                     cursor: 'pointer',
                     boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
                     transition: 'transform 0.2s, box-shadow 0.2s'
@@ -259,7 +296,7 @@ export default function Catalog({ onNavigate }) {
                       marginBottom: '10px',
                       display: 'flex',
                       alignItems: 'center',
-                      justify: 'center'
+                      justifyContent: 'center'
                     }}>
                       {image ? (
                         <img
@@ -271,26 +308,32 @@ export default function Catalog({ onNavigate }) {
                         <BookOpen size={36} color="#adb5bd" />
                       )}
 
-                      {/* Ürək ikonu */}
+                      {/* Favorilər (Ürək) Düyməsi */}
                       <button
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(e) => handleFavoriteClick(e, book, bookId)}
+                        title={isFav ? t.addToWishlist : t.addToWishlist}
                         style={{
                           position: 'absolute',
                           top: '10px',
                           right: '10px',
-                          width: '30px',
-                          height: '30px',
+                          width: '32px',
+                          height: '32px',
                           borderRadius: '50%',
                           backgroundColor: '#fff',
                           border: 'none',
                           display: 'flex',
                           alignItems: 'center',
-                          justify: 'center',
+                          justifyContent: 'center',
                           cursor: 'pointer',
-                          boxShadow: '0 2px 5px rgba(0,0,0,0.15)'
+                          boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+                          transition: 'transform 0.2s, background-color 0.2s'
                         }}
                       >
-                        <Heart size={15} color="#495057" />
+                        <Heart
+                          size={16}
+                          color={isFav ? '#e51937' : '#495057'}
+                          fill={isFav ? '#e51937' : 'none'}
+                        />
                       </button>
                     </div>
 
@@ -317,33 +360,51 @@ export default function Catalog({ onNavigate }) {
                       overflow: 'hidden',
                       textOverflow: 'ellipsis'
                     }}>
-                      {book.author || 'Müəllif qeyd edilməyib'}
+                      {author}
                     </p>
                   </div>
 
-                  {/* Qiymət və Səbət Düyməsi */}
+                  {/* Qiymət və Səbətə At Düyməsi */}
                   <div style={{
                     display: 'flex',
                     alignItems: 'center',
-                    justify: 'space-between',
+                    justifyContent: 'space-between',
                     paddingTop: '6px'
                   }}>
                     <span style={{ fontSize: '18px', fontWeight: 800, color: '#e51937' }}>
                       {book.price ? `${book.price} ₼` : 'Təyin edilməyib'}
                     </span>
 
-                    <button style={{
-                      width: '28px',
-                      height: '28px',
-                      borderRadius: '6px',
-                      border: '1px solid #dee2e6',
-                      backgroundColor: '#fff',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justify: 'center',
-                      cursor: 'pointer'
-                    }}>
-                      <ShoppingBag size={14} color="#495057" />
+                    {/* Səbətə At Düyməsi */}
+                    <button
+                      onClick={(e) => handleAddToCartClick(e, book, bookId)}
+                      title={isInCart ? t.addToCart : t.addToCart}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        backgroundColor: isInCart ? '#2b8a3e' : '#e51937',
+                        color: '#fff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: 'background-color 0.2s, transform 0.1s'
+                      }}
+                    >
+                      {isInCart ? (
+                        <>
+                          <Check size={14} color="#fff" />
+                          <span>Əlavə olundu</span>
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingBag size={14} color="#fff" />
+                          <span>{t.addToCart}</span>
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>
@@ -352,7 +413,7 @@ export default function Catalog({ onNavigate }) {
           </div>
         ) : (
           <div style={{ textAlign: 'center', padding: '60px 0', color: '#868e96' }}>
-            <p style={{ fontSize: '15px' }}>Bu kateqoriyada kitab tapılmadı.</p>
+            <p style={{ fontSize: '15px' }}>{t.notFound}</p>
           </div>
         )}
 

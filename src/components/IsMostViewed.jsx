@@ -1,34 +1,36 @@
 import React, { useState, useRef } from 'react';
 import { BOOKS_DATA } from '../data/vbooksData';
 import { useWishlist } from '../context/WishlistContext';
+import { useLanguage } from '../context/LanguageContext';
 
-export default function MostViewedSection({ onNavigate }) {
+export default function MostViewedSection({ onNavigate, onSelectBook }) {
+  const { t } = useLanguage();
   const INITIAL_COUNT = 6;
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
   
-  // "Bağla" düyməsinə basıldıqda bölmənin başına rahat qayıtmaq üçün ref
   const sectionRef = useRef(null);
 
   const { wishlist, toggleWishlist } = useWishlist();
   const [modalBook, setModalBook] = useState(null);
 
-  // Məlumat bazasından həftənin baxılanlarını filtrələyirik
-  const rawBooks = Array.isArray(BOOKS_DATA) ? BOOKS_DATA : (BOOKS_DATA.az || []);
-  const currentBooks = rawBooks.filter((book) => book.isMostViewed || book.categoryId);
+  // Məlumatları təhlükəsiz şəkildə oxuyuruq
+  const rawBooks = Array.isArray(BOOKS_DATA) ? BOOKS_DATA : (BOOKS_DATA?.az || []);
+  
+  // Əgər isMostViewed xüsusiyyəti yoxdursa, bütün kitabları göstərməsi üçün alternativ yaradırıq
+  const currentBooks = rawBooks.length > 0 
+    ? rawBooks.filter((book) => book.isMostViewed !== false) 
+    : [];
 
   const displayedBooks = currentBooks.slice(0, visibleCount);
 
-  // Növbəti 6 kitabı açır
   const handleShowMore = () => {
     setVisibleCount((prev) => prev + INITIAL_COUNT);
   };
 
-  // Bir addım geri qaytarır (məsələn: 18 -> 12, 12 -> 6)
   const handleShowLess = () => {
     setVisibleCount((prev) => Math.max(INITIAL_COUNT, prev - INITIAL_COUNT));
   };
 
-  // Tamamilə bağlayıb ilkin 6 vəziyyətinə qaytarır və yuxarı scroll edir
   const handleCloseAll = () => {
     setVisibleCount(INITIAL_COUNT);
     if (sectionRef.current) {
@@ -42,6 +44,15 @@ export default function MostViewedSection({ onNavigate }) {
 
     if (!isAlreadyFav) {
       setModalBook(book);
+    }
+  };
+
+  // Yönləndirmə funksiyası
+  const handleOpenDetail = (book) => {
+    if (onSelectBook) {
+      onSelectBook(book);
+    } else if (onNavigate) {
+      onNavigate('product-detail', book);
     }
   };
 
@@ -66,7 +77,7 @@ export default function MostViewedSection({ onNavigate }) {
           marginBottom: '32px',
         }}
       >
-        Həftənin ən çox <span style={{ color: '#e52e2e' }}>baxılanları</span>
+        {t.mostViewedTitlePrefix} <span style={{ color: '#e52e2e' }}>{t.mostViewedTitleHighlight}</span>
       </h2>
 
       {/* KİTABLAR ŞƏBƏKƏSİ */}
@@ -80,6 +91,8 @@ export default function MostViewedSection({ onNavigate }) {
       >
         {displayedBooks.map((book) => {
           const isFav = wishlist.some((item) => item.id === book.id);
+          const safePrice = Number(book.price) || 0;
+          const safeOldPrice = book.oldPrice ? Number(book.oldPrice) : null;
 
           return (
             <div
@@ -91,7 +104,7 @@ export default function MostViewedSection({ onNavigate }) {
               }}
             >
               <div
-                onClick={() => onNavigate && onNavigate('details', book)}
+                onClick={() => handleOpenDetail(book)}
                 style={{
                   position: 'relative',
                   backgroundColor: '#f3f4f6',
@@ -106,6 +119,10 @@ export default function MostViewedSection({ onNavigate }) {
                   src={book.image}
                   alt={book.title}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = 'https://via.placeholder.com/180x260?text=Kitab+Üzlüyü';
+                  }}
                 />
 
                 <button
@@ -113,7 +130,7 @@ export default function MostViewedSection({ onNavigate }) {
                     e.stopPropagation();
                     handleFavoriteClick(book);
                   }}
-                  title={isFav ? 'Sevimlilərdən çıxar' : 'Sevimlilərə əlavə et'}
+                  title={isFav ? t.removeFromFavorites : t.addToFavorites}
                   style={{
                     position: 'absolute',
                     top: '10px',
@@ -136,7 +153,7 @@ export default function MostViewedSection({ onNavigate }) {
               </div>
 
               <h3
-                onClick={() => onNavigate && onNavigate('details', book)}
+                onClick={() => handleOpenDetail(book)}
                 style={{
                   fontSize: '14px',
                   fontWeight: '500',
@@ -157,11 +174,11 @@ export default function MostViewedSection({ onNavigate }) {
 
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: 'auto' }}>
                 <span style={{ fontSize: '15px', fontWeight: '700', color: '#1f2937' }}>
-                  {book.price.toFixed(2)} ₼
+                  {safePrice.toFixed(2)} ₼
                 </span>
-                {book.oldPrice && (
+                {safeOldPrice && (
                   <span style={{ fontSize: '13px', color: '#9ca3af', textDecoration: 'line-through' }}>
-                    {book.oldPrice.toFixed(2)} ₼
+                    {safeOldPrice.toFixed(2)} ₼
                   </span>
                 )}
               </div>
@@ -170,9 +187,8 @@ export default function MostViewedSection({ onNavigate }) {
         })}
       </div>
 
-      {/* DÜYMƏLƏR (Daha çox / Daha az / Bağla) */}
+      {/* DÜYMƏLƏR */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
-        {/* Hələ də göstərilməyən kitablar varsa "Daha çox göstər" görünür */}
         {!isAllShown && (
           <button
             onClick={handleShowMore}
@@ -188,11 +204,10 @@ export default function MostViewedSection({ onNavigate }) {
               transition: 'all 0.2s',
             }}
           >
-            Daha çox göstər
+            {t.showMore}
           </button>
         )}
         
-        {/* İlkin saydan (6-dan) çox kitab açılıbsa "Daha az göstər" düyməsi görünür */}
         {visibleCount > INITIAL_COUNT && (
           <button
             onClick={handleShowLess}
@@ -208,11 +223,10 @@ export default function MostViewedSection({ onNavigate }) {
               transition: 'all 0.2s',
             }}
           >
-            Daha az göstər
+            {t.showLess}
           </button>
         )}
 
-        {/* Bütün kitablar tam açıldıqdan sonra "Bağla" düyməsi görünür */}
         {isAllShown && currentBooks.length > INITIAL_COUNT && (
           <button
             onClick={handleCloseAll}
@@ -228,7 +242,7 @@ export default function MostViewedSection({ onNavigate }) {
               transition: 'all 0.2s',
             }}
           >
-            Bağla
+            {t.close}
           </button>
         )}
       </div>
@@ -264,7 +278,7 @@ export default function MostViewedSection({ onNavigate }) {
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: '1px solid #f3f4f6' }}>
               <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '500', color: '#1f2937' }}>
-                Məhsul seçilmişlər siyahısına əlavə edildi
+                {t.addedToWishlistModal}
               </h3>
               <button
                 onClick={() => setModalBook(null)}
@@ -283,7 +297,7 @@ export default function MostViewedSection({ onNavigate }) {
               <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ color: '#e52e2e', fontSize: '15px' }}>{modalBook.title}</span>
                 <span style={{ color: '#1f2937', fontSize: '15px', fontWeight: '500' }}>
-                  1 x {modalBook.price.toFixed(2)} ₼
+                  1 x {(Number(modalBook.price) || 0).toFixed(2)} ₼
                 </span>
               </div>
             </div>
@@ -305,7 +319,7 @@ export default function MostViewedSection({ onNavigate }) {
                   cursor: 'pointer',
                 }}
               >
-                Seçilmiş məhsulların siyahısına baxın
+                {t.viewWishlist}
               </button>
             </div>
           </div>

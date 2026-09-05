@@ -1,18 +1,19 @@
 import React, { useState, useRef } from 'react';
 import { BOOKS_DATA } from '../data/booksData';
 import { useWishlist } from '../context/WishlistContext';
+import { useLanguage } from '../context/LanguageContext';
 
-export default function TodaysPicks({ onNavigate }) {
-  const [activeTab, setActiveTab] = useState('az');
+export default function TodaysPicks({ onNavigate, onSelectBook }) {
+  const [activeTab, setActiveTab] = useState('AZ');
   const [visibleCount, setVisibleCount] = useState(6);
   
-  // Siyahı bağlandıqda səhifənin yuxarıya səliqəli qaytarması üçün ref
   const sectionRef = useRef(null);
 
   const { wishlist, toggleWishlist } = useWishlist();
   const [modalBook, setModalBook] = useState(null);
+  const { t } = useLanguage();
 
-  const currentBooks = BOOKS_DATA[activeTab] || [];
+  const currentBooks = BOOKS_DATA[activeTab.toLowerCase()] || BOOKS_DATA[activeTab] || [];
   const displayedBooks = currentBooks.slice(0, visibleCount);
 
   const handleTabChange = (lang) => {
@@ -24,7 +25,6 @@ export default function TodaysPicks({ onNavigate }) {
     setVisibleCount((prev) => prev + 6);
   };
 
-  // Siyahını yenidən bağlamaq (6 dənəyə endirmək) üçün funksiya
   const handleShowLess = () => {
     setVisibleCount(6);
     if (sectionRef.current) {
@@ -38,6 +38,16 @@ export default function TodaysPicks({ onNavigate }) {
 
     if (!isAlreadyFav) {
       setModalBook(book);
+    }
+  };
+
+  const handleOpenDetail = (book) => {
+    if (onSelectBook) {
+      onSelectBook(book);
+    } else if (onNavigate) {
+      onNavigate('details', book);
+      onNavigate('book-details', book);
+      onNavigate('product-detail', book);
     }
   };
 
@@ -60,7 +70,7 @@ export default function TodaysPicks({ onNavigate }) {
           marginBottom: '20px',
         }}
       >
-        Bugünün seçimləri
+        {t.todaysPicksTitle || "Bugünün seçimləri"}
       </h2>
 
       {/* DİL TABLARI */}
@@ -73,9 +83,9 @@ export default function TodaysPicks({ onNavigate }) {
         }}
       >
         {[
-          { key: 'az', label: 'Azərbaycan' },
-          { key: 'ru', label: 'Rusca' },
-          { key: 'tr', label: 'Türkcə' },
+          { key: 'AZ', label: t.tabAz || 'Azərbaycan' },
+          { key: 'RU', label: t.tabRu || 'Rusca' },
+          { key: 'TR', label: t.tabTr || 'Türkcə' },
         ].map((tab) => {
           const isActive = activeTab === tab.key;
           return (
@@ -117,15 +127,15 @@ export default function TodaysPicks({ onNavigate }) {
           return (
             <div
               key={book.id}
+              onClick={() => handleOpenDetail(book)}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
                 position: 'relative',
+                cursor: 'pointer',
               }}
             >
-              {/* Şəkil Konteyneri */}
               <div
-                onClick={() => onNavigate && onNavigate('details', book)}
                 style={{
                   position: 'relative',
                   backgroundColor: '#f3f4f6',
@@ -133,7 +143,6 @@ export default function TodaysPicks({ onNavigate }) {
                   overflow: 'hidden',
                   aspectRatio: '3/4',
                   marginBottom: '12px',
-                  cursor: 'pointer',
                 }}
               >
                 <img
@@ -146,13 +155,12 @@ export default function TodaysPicks({ onNavigate }) {
                   }}
                 />
 
-                {/* Sevimlilərə əlavə et düyməsi */}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleFavoriteClick(book);
                   }}
-                  title={isFav ? 'Sevimlilərdən çıxar' : 'Sevimlilərə əlavə et'}
+                  title={isFav ? t.removeFromFavorites || 'Sevimlilərdən çıxar' : t.addToFavorites || 'Sevimlilərə əlavə et'}
                   style={{
                     position: 'absolute',
                     top: '10px',
@@ -174,9 +182,7 @@ export default function TodaysPicks({ onNavigate }) {
                 </button>
               </div>
 
-              {/* Adı */}
               <h3
-                onClick={() => onNavigate && onNavigate('details', book)}
                 style={{
                   fontSize: '14px',
                   fontWeight: '500',
@@ -189,13 +195,11 @@ export default function TodaysPicks({ onNavigate }) {
                   display: '-webkit-box',
                   WebkitLineClamp: 2,
                   WebkitBoxOrient: 'vertical',
-                  cursor: 'pointer',
                 }}
               >
                 {book.title}
               </h3>
 
-              {/* Qiymət */}
               <div
                 style={{
                   display: 'flex',
@@ -211,7 +215,7 @@ export default function TodaysPicks({ onNavigate }) {
                     color: '#1f2937',
                   }}
                 >
-                  {book.price.toFixed(2)} ₼
+                  {Number(book.price).toFixed(2)} ₼
                 </span>
                 {book.oldPrice && (
                   <span
@@ -221,7 +225,7 @@ export default function TodaysPicks({ onNavigate }) {
                       textDecoration: 'line-through',
                     }}
                   >
-                    {book.oldPrice.toFixed(2)} ₼
+                    {Number(book.oldPrice).toFixed(2)} ₼
                   </span>
                 )}
               </div>
@@ -230,7 +234,7 @@ export default function TodaysPicks({ onNavigate }) {
         })}
       </div>
 
-      {/* DÜYMƏLƏR HİSSƏSİ (DAHA ÇOX GÖSTƏR & BAĞLA) */}
+      {/* DÜYMƏLƏR HİSSƏSİ */}
       <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center', gap: '12px' }}>
         {visibleCount < currentBooks.length && (
           <button
@@ -247,7 +251,7 @@ export default function TodaysPicks({ onNavigate }) {
               transition: 'all 0.2s',
             }}
           >
-            Daha çox göstər
+            {t.showMore || "Daha çox göstər"}
           </button>
         )}
 
@@ -266,7 +270,7 @@ export default function TodaysPicks({ onNavigate }) {
               transition: 'all 0.2s',
             }}
           >
-            Bağla
+            {t.collapse || "Bağla"}
           </button>
         )}
       </div>
@@ -310,7 +314,7 @@ export default function TodaysPicks({ onNavigate }) {
               }}
             >
               <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '500', color: '#1f2937' }}>
-                Məhsul seçilmişlər siyahısına əlavə edildi
+                {t.addedToWishlistModal || "Məhsul seçilmişlər siyahısına əlavə edildi"}
               </h3>
               <button
                 onClick={() => setModalBook(null)}
@@ -336,7 +340,7 @@ export default function TodaysPicks({ onNavigate }) {
               <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ color: '#e52e2e', fontSize: '15px' }}>{modalBook.title}</span>
                 <span style={{ color: '#1f2937', fontSize: '15px', fontWeight: '500' }}>
-                  1 x {modalBook.price.toFixed(2)} ₼
+                  1 x {Number(modalBook.price).toFixed(2)} ₼
                 </span>
               </div>
             </div>
@@ -358,7 +362,7 @@ export default function TodaysPicks({ onNavigate }) {
                   cursor: 'pointer',
                 }}
               >
-                Seçilmiş məhsulların siyahısına baxın
+                {t.viewWishlist || "Seçilmiş məhsulların siyahısına baxın"}
               </button>
             </div>
           </div>

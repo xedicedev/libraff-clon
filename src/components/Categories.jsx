@@ -12,18 +12,22 @@ import {
   Rocket, 
   X
 } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+
+// Kateqoriya ID-ləri ikonlarla eşləşdirilir; adlar artıq tərcümə açarlarından gəlir
 const CATEGORIES = [
-  { id: 'personal_dev', name: 'Şəxsi İnkişaf', icon: Brain },
-  { id: 'psychology', name: 'Psixologiya', icon: UserCheck },
-  { id: 'classics', name: 'Klassiklər', icon: Feather },
-  { id: 'sci_fi', name: 'Elmi-fantastika & Fantaziya', icon: Sparkles },
-  { id: 'detective', name: 'Detektiv', icon: Search },
-  { id: 'fiction', name: 'Bədii ədəbiyyat', icon: BookOpen },
-  { id: 'novels', name: 'Romanlar & Novellalar', icon: ImageIcon },
-  { id: 'discounts', name: 'Endirimlər', icon: Percent },
-  { id: 'kids_fiction', name: 'Bədii uşaq ədəbiyyatı', icon: Castle },
-  { id: 'kids_non_fiction', name: 'Qeyri-bədii uşaq ədəbiyyatı', icon: Rocket },
+  { id: 'personal_dev', key: 'catPersonalDev', icon: Brain },
+  { id: 'psychology', key: 'catPsychology', icon: UserCheck },
+  { id: 'classics', key: 'catClassics', icon: Feather },
+  { id: 'sci_fi', key: 'catSciFi', icon: Sparkles },
+  { id: 'detective', key: 'catDetective', icon: Search },
+  { id: 'fiction', key: 'catFiction', icon: BookOpen },
+  { id: 'novels', key: 'catNovels', icon: ImageIcon },
+  { id: 'discounts', key: 'catDiscounts', icon: Percent },
+  { id: 'kids_fiction', key: 'catKidsFiction', icon: Castle },
+  { id: 'kids_non_fiction', key: 'catKidsNonFiction', icon: Rocket },
 ];
+
 const BOOKS_DATA = [
   { id: 1, title: 'Atomik Vərdişlər', categoryId: 'personal_dev', price: 15.50, image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTuunVa4hAqLpFTMGLHf9waXCDGmNeuK-SEtklMFWKToZEkV2KOqazkZF3s&s=100' },
   { id: 2, title: 'Dostları Necə Qazanmalı', categoryId: 'personal_dev', price: 12.00, image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7Ja4f_yJjXjZmz3ApTDYzV9GgK28svenNnfWassOAgxMwiiOxvRPV3o8Z&s=100' },
@@ -35,7 +39,7 @@ const BOOKS_DATA = [
   { id: 8, title: 'Səfillər', categoryId: 'classics', price: 22.00, image: 'https://www.libraff.az/images/thumbnails/600/600/from_1c/5e1c96dc-0686-11ed-a509-503eaa120fc7_1_1759181812.jpg.webp' },
   { id: 9, title: 'Cinayət və Cəza', categoryId: 'classics', price: 17.50, image: 'https://www.libraff.az/images/thumbnails/600/600/from_1c/2622170a-3255-11f0-a56c-503eaa120fc7_1_1759181410.jpg.webp' },
   { id: 10, title: 'Qürur və Qərəz', categoryId: 'classics', price: 13.00, image: 'https://www.kitabyurdu.org/uploads/posts/2017-06/1497120492_ceyn-ostin-qurur-ve-qerez-cover-page-300x400.jpg' },
-  { id: 11, title: 'Anna Karenina', categoryId: 'classics', price: 21.00, image: 'https://m.media-amazon.com/images/M/MV5BMTU0NDgxNDg0NV5BMl5BanBnXkFtZTcwMjE4MzkwOA@@._V1_FMjpg_UX1000_.jpg' },
+  { id: 11, title: 'Anna Karenina', categoryId: 'classics', price: 21.00, image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbo0A2PPd55256Xdyp1lLoKslpkyutyeUXzc3FMnEiTsw_EeCGHU8K7LU&s=10' },
   { id: 12, title: 'Harri Potter və Fəlsəfə Daşı', categoryId: 'sci_fi', price: 16.50, image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQkN1vDsqxZEQDfjPiEZsvUP2N43TD9Z42jxJf4GhPAi3Cwnk2HtdnP8bEQ&s=10' },
   { id: 13, title: 'Dune (Qum Dünyası)', categoryId: 'sci_fi', price: 19.90, image: 'https://cdn.insales-shop.ru/images/products/1/6496/272791904/0000000662978-1.jpg' },
   { id: 14, title: 'Üzüklərin Hökmdarı', categoryId: 'sci_fi', price: 25.00, image: 'https://upload.wikimedia.org/wikipedia/az/9/9d/%C3%9Cz%C3%BCkl%C9%99rin_h%C3%B6kmdar%C4%B1_-_%C3%9Cz%C3%BCk_qarda%C5%9Fl%C4%B1%C4%9F%C4%B1_%28film%2C_2001%29.jpg' },
@@ -55,6 +59,7 @@ const BOOKS_DATA = [
 ];
 
 export default function CategoriesSection({ onNavigate }) {
+  const { t } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState(null);
 
   const filteredBooks = selectedCategory
@@ -70,23 +75,9 @@ export default function CategoriesSection({ onNavigate }) {
         {/* BAŞLIQ */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
-            Kateqoriyalar
+            {t.categoriesTitle}
           </h2>
-          <button 
-            onClick={() => setSelectedCategory(null)}
-            style={{ 
-              background: 'none', 
-              border: 'none', 
-              color: '#6b7280', 
-              fontSize: '14px', 
-              cursor: 'pointer',
-              transition: 'color 0.2s'
-            }}
-            onMouseOver={(e) => e.currentTarget.style.color = '#dc2626'}
-            onMouseOut={(e) => e.currentTarget.style.color = '#6b7280'}
-          >
-            Hamısına bax &rarr;
-          </button>
+        
         </div>
 
         {/* KATEQORİYA KARTLARI */}
@@ -156,7 +147,7 @@ export default function CategoriesSection({ onNavigate }) {
                     lineHeight: '1.3'
                   }}
                 >
-                  {cat.name}
+                  {t[cat.key]}
                 </span>
               </div>
             );
@@ -168,7 +159,7 @@ export default function CategoriesSection({ onNavigate }) {
           <div style={{ paddingTop: '24px', borderTop: '1px solid #e5e7eb', marginTop: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
-                {activeCategoryObj?.name}
+                {t[activeCategoryObj?.key]}
               </h3>
               <button 
                 onClick={() => setSelectedCategory(null)}
@@ -185,18 +176,18 @@ export default function CategoriesSection({ onNavigate }) {
                   color: '#4b5563'
                 }}
               >
-                Bağla <X size={14} />
+                {t.close} <X size={14} />
               </button>
             </div>
 
             {filteredBooks.length === 0 ? (
-              <p style={{ color: '#6b7280', fontSize: '15px' }}>Bu kateqoriyada hələ ki kitab yoxdur.</p>
+              <p style={{ color: '#6b7280', fontSize: '15px' }}>{t.noBooksInCategory}</p>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '20px' }}>
                 {filteredBooks.map((book) => (
                   <div 
                     key={book.id} 
-                    onClick={() => onNavigate && onNavigate('details', book)}
+                    onClick={() => onNavigate && onNavigate('product-detail', book)}
                     style={{ 
                       backgroundColor: '#fff', 
                       border: '1px solid #e5e7eb', 

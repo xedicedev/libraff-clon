@@ -20,11 +20,14 @@ export function CartProvider({ children }) {
     }
   }, [cartItems]);
 
-  const addToCart = (product) => {
+  // DÜZƏLİŞ: 2-ci parametr olaraq quantity (miqdar) əlavə edildi
+  const addToCart = (product, quantityToAdd = 1) => {
     if (!product) return;
 
+    // Gələn miqdarı ədədə çeviririk (əgər ötürülməyibsə, 1 götürür)
+    const amount = Number(quantityToAdd) || 1;
+
     setCartItems((prevItems) => {
-      // Unikal ID tapma və ya yaratma mexanizmi
       const rawTitle = product.title || product.name || 'Adsız Kitab';
       const productId = product.id || product._id || product.code || `${rawTitle}-${product.price}`;
 
@@ -35,13 +38,17 @@ export function CartProvider({ children }) {
 
       if (existingIndex > -1) {
         const updated = [...prevItems];
+        const currentQty = Number(updated[existingIndex].quantity) || 1;
+        
+        // DÜZƏLİŞ: Sabit +1 əvəzinə seçilən miqdarı (amount) əlavə edirik
         updated[existingIndex] = {
           ...updated[existingIndex],
-          quantity: (updated[existingIndex].quantity || 1) + 1
+          quantity: currentQty + amount
         };
         return updated;
       } else {
-        return [...prevItems, { ...product, id: productId, quantity: 1 }];
+        // DÜZƏLİŞ: İlk dəfə əlavə olunanda da seçilən miqdarı (amount) mənimsədirik
+        return [...prevItems, { ...product, id: productId, quantity: amount }];
       }
     });
   };
@@ -65,7 +72,7 @@ export function CartProvider({ children }) {
       prevItems.map((item) => {
         const itemId = item.id || item._id || item.code || `${item.title || item.name}-${item.price}`;
         if (String(itemId) === String(id)) {
-          return { ...item, quantity: newQuantity };
+          return { ...item, quantity: Number(newQuantity) };
         }
         return item;
       })
@@ -76,11 +83,11 @@ export function CartProvider({ children }) {
     setCartItems([]);
   };
 
-  const cartCount = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
+  const cartCount = cartItems.reduce((sum, item) => sum + (Number(item.quantity) || 1), 0);
 
   const totalPrice = cartItems.reduce((sum, item) => {
     const price = Number(item.price || (item.book && item.book.price)) || 0;
-    return sum + price * (item.quantity || 1);
+    return sum + price * (Number(item.quantity) || 1);
   }, 0);
 
   return (
