@@ -1,5 +1,5 @@
 {
-  "name": "libraff",
+  "name": "taskforintern",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -16,7 +16,7 @@
     "@fortawesome/react-fontawesome": "^3.5.0",
     "@tailwindcss/vite": "^4.3.3",
     "i18next": "^26.3.6",
-    "lucide-react": "^1.28.0",
+    "lucide-react": "^1.45.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-i18next": "^17.0.11",
